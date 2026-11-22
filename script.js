@@ -1217,22 +1217,121 @@ function renderFinanceStatistics() {
 /* =====================================================
    18. REPORT STATISTICS
 ===================================================== */
-
 function renderReportStatistics() {
 
+    // Safely calculate monetary values
+    const getRecordAmount = (record) => {
+        return Number(
+            record.total ??
+            record.amount ??
+            record.totalAmount ??
+            record.value ??
+            0
+        ) || 0;
+    };
+
+    // Procurement
+    const procurementTotal = db.procurement.reduce(
+        (sum, record) => sum + getRecordAmount(record),
+        0
+    );
+
+    // Sales
+    const salesTotal = db.sales.reduce(
+        (sum, record) => sum + getRecordAmount(record),
+        0
+    );
+
+    // Expenses
+    const expenseRecords = db.finance.filter(record => {
+        const category = String(
+            record.type ??
+            record.category ??
+            record.transactionType ??
+            ""
+        ).toLowerCase();
+
+        return category.includes("expense");
+    });
+
+    const expenseTotal = expenseRecords.reduce(
+        (sum, record) => sum + getRecordAmount(record),
+        0
+    );
+
+    // Inventory and supplier records
+    const inventoryCount = db.inventory.length;
+    const supplierCount = db.suppliers.length;
+
+    // Financial balance
+    const balance = salesTotal - expenseTotal;
+
+    // Main report statistics
+    setText("report-procurement", money(procurementTotal));
+    setText("report-sales", money(salesTotal));
+    setText("report-expenses", money(expenseTotal));
+    setText("report-inventory", inventoryCount);
+
+    // Performance indicators
+    setText("report-inventory-count", inventoryCount);
+    setText("report-supplier-count", supplierCount);
+
+    // Operational activity counts
+    setText("report-procurement-count", db.procurement.length);
+    setText("report-receiving-count", db.receiving.length);
+    setText("report-production-count", db.production.length);
+    setText("report-orders-count", db.sales.length);
+    setText("report-logistics-count", db.logistics.length);
+
+    // Financial summary
+    setText("report-financial-revenue", money(salesTotal));
+    setText("report-financial-expenses", money(expenseTotal));
+    setText("report-financial-balance", money(balance));
+
+    // Performance bars
+    const maximum = Math.max(
+        procurementTotal,
+        salesTotal,
+        1
+    );
+
+    const procurementWidth =
+        (procurementTotal / maximum) * 100;
+
+    const salesWidth =
+        (salesTotal / maximum) * 100;
+
+    const procurementBar = document.getElementById(
+        "report-procurement-bar"
+    );
+
+    const salesBar = document.getElementById(
+        "report-sales-bar"
+    );
+
+    if (procurementBar) {
+        procurementBar.style.width =
+            procurementWidth + "%";
+    }
+
+    if (salesBar) {
+        salesBar.style.width =
+            salesWidth + "%";
+    }
+
+    // Status messages
     setText(
-        "report-suppliers",
-        db.suppliers.length
+        "report-procurement-status",
+        db.procurement.length
+            ? "Procurement records available"
+            : "Awaiting records"
     );
 
     setText(
-        "report-buyers",
-        db.buyers.length
-    );
-
-    setText(
-        "report-orders",
+        "report-sales-status",
         db.sales.length
+            ? "Sales records available"
+            : "Awaiting records"
     );
 }
 
