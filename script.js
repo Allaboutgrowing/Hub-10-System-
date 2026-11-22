@@ -1070,7 +1070,14 @@ function renderDashboard() {
         "dashboard-expenses",
         money(expenseTotal)
     );
-
+setText(
+   "dashboard-sales-snapshot",
+        money(salesTotal)
+       );
+setText(
+   "dashboard-expenses-snapshot", 
+   money(expenseTotal)
+);
     setText(
         "dashboard-balance",
         money(salesTotal - expenseTotal)
