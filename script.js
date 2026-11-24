@@ -1,18 +1,32 @@
 /* =====================================================
    HUB 01 ONE SYSTEM™
    EV EMPIRE VENTURES
-   Version 1.1 - Enhanced Browser Prototype
+   VERSION 2.0 — APPLICATION ENGINE
 ===================================================== */
 
 "use strict";
 
+
 /* =====================================================
-   1. DATABASE
+   1. DATABASE CONFIGURATION
 ===================================================== */
 
-const DB_KEY = "hub01_database_v1";
+const STORAGE_KEY = "hub01_database_v1";
 
-const emptyDatabase = {
+const COLLECTIONS = [
+    "buyers",
+    "suppliers",
+    "procurement",
+    "receiving",
+    "inventory",
+    "production",
+    "sales",
+    "logistics",
+    "finance",
+    "activity"
+];
+
+const EMPTY_DATABASE = {
     buyers: [],
     suppliers: [],
     procurement: [],
@@ -25,109 +39,180 @@ const emptyDatabase = {
     activity: []
 };
 
+let database = loadDatabase();
+
+
+/* =====================================================
+   2. DATABASE FUNCTIONS
+===================================================== */
+
 function loadDatabase() {
     try {
-        const saved = localStorage.getItem(DB_KEY);
+        const saved = localStorage.getItem(STORAGE_KEY);
 
         if (!saved) {
-            return structuredClone(emptyDatabase);
+            return structuredDatabaseCopy();
         }
 
         const parsed = JSON.parse(saved);
 
-        const database = {
-            ...structuredClone(emptyDatabase),
-            ...parsed
-        };
+        if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+            return structuredDatabaseCopy();
+        }
 
-        Object.keys(emptyDatabase).forEach(collection => {
-            if (!Array.isArray(database[collection])) {
-                database[collection] = [];
+        const result = structuredDatabaseCopy();
+
+        COLLECTIONS.forEach(collection => {
+            if (Array.isArray(parsed[collection])) {
+                result[collection] = parsed[collection];
             }
         });
 
-        return database;
+        return result;
 
     } catch (error) {
         console.error("Database loading error:", error);
-        return structuredClone(emptyDatabase);
+        return structuredDatabaseCopy();
     }
 }
 
-let db = loadDatabase();
+
+function structuredDatabaseCopy() {
+    return JSON.parse(JSON.stringify(EMPTY_DATABASE));
+}
+
 
 function saveDatabase() {
     try {
-        localStorage.setItem(DB_KEY, JSON.stringify(db));
+        localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify(database)
+        );
+
         return true;
 
     } catch (error) {
         console.error("Database saving error:", error);
 
         showToast(
-            "Unable to save. Browser storage may be full."
+            "Unable to save data. Check your browser storage."
         );
 
         return false;
     }
 }
 
+
+function commitDatabase(message) {
+    if (!saveDatabase()) {
+        return false;
+    }
+
+    renderAll();
+
+    if (message) {
+        showToast(message);
+    }
+
+    return true;
+}
+
+
 /* =====================================================
-   2. GENERAL UTILITIES
+   3. GENERAL HELPERS
 ===================================================== */
 
-function createId() {
+function generateId() {
     return (
-        Date.now().toString(36) +
-        Math.random().toString(36).slice(2, 9)
+        "H01-" +
+        Date.now().toString(36).toUpperCase() +
+        "-" +
+        Math.random().toString(36).substring(2, 7).toUpperCase()
     );
 }
+
 
 function getValue(id) {
-    return (
-        document.getElementById(id)?.value.trim() || ""
-    );
+    const element = document.getElementById(id);
+
+    return element ? element.value.trim() : "";
 }
+
 
 function getNumber(id) {
-    return Number(getValue(id)) || 0;
+    const value = Number(getValue(id));
+
+    return Number.isFinite(value) ? value : 0;
 }
 
-function money(value) {
-    return "GH₵" + Number(value || 0).toLocaleString(
-        "en-GH",
-        {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        }
-    );
+
+function formatMoney(value) {
+    return new Intl.NumberFormat("en-GH", {
+        style: "currency",
+        currency: "GHS",
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).format(Number(value) || 0);
 }
 
-function numberFormat(value) {
-    return Number(value || 0).toLocaleString(
-        "en-GH",
-        {
-            maximumFractionDigits: 2
-        }
-    );
+
+function formatNumber(value) {
+    return new Intl.NumberFormat("en-GH", {
+        maximumFractionDigits: 2
+    }).format(Number(value) || 0);
 }
+
 
 function escapeHTML(value) {
-    return String(value ?? "").replace(
-        /[&<>"']/g,
-        character => {
-            const characters = {
-                "&": "&amp;",
-                "<": "&lt;",
-                ">": "&gt;",
-                '"': "&quot;",
-                "'": "&#039;"
-            };
+    return String(value ?? "").replace(/[&<>"']/g, character => {
+        const entities = {
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#039;"
+        };
 
-            return characters[character];
-        }
-    );
+        return entities[character];
+    });
 }
+
+
+function formatDate(value) {
+    if (!value) return "—";
+
+    const date = new Date(value + "T00:00:00");
+
+    if (Number.isNaN(date.getTime())) {
+        return escapeHTML(value);
+    }
+
+    return date.toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric"
+    });
+}
+
+
+function formatDateTime(value) {
+    if (!value) return "—";
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return "—";
+    }
+
+    return date.toLocaleString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+    });
+}
+
 
 function today() {
     const date = new Date();
@@ -139,6 +224,40 @@ function today() {
     return `${year}-${month}-${day}`;
 }
 
+
+function setText(id, value) {
+    const element = document.getElementById(id);
+
+    if (element) {
+        element.textContent = value;
+    }
+}
+
+
+function setHTML(id, value) {
+    const element = document.getElementById(id);
+
+    if (element) {
+        element.innerHTML = value;
+    }
+}
+
+
+function findRecord(collection, id) {
+    return database[collection].find(
+        record => record.id === id
+    );
+}
+
+
+function totalOf(collection, property) {
+    return database[collection].reduce(
+        (total, record) => total + (Number(record[property]) || 0),
+        0
+    );
+}
+
+
 function showToast(message) {
     const toast = document.getElementById("toast");
 
@@ -147,142 +266,40 @@ function showToast(message) {
     toast.textContent = message;
     toast.classList.add("show");
 
-    clearTimeout(window.toastTimer);
+    clearTimeout(showToast.timeout);
 
-    window.toastTimer = setTimeout(() => {
+    showToast.timeout = setTimeout(() => {
         toast.classList.remove("show");
-    }, 3500);
+    }, 3000);
 }
 
-function findRecord(collection, id) {
-    if (!db[collection]) return undefined;
 
-    return db[collection].find(
-        record => record.id === id
-    );
-}
+/* =====================================================
+   4. ACTIVITY LOGGING
+===================================================== */
 
-function addActivity(message, module) {
-    db.activity.unshift({
-        id: createId(),
-        message,
+function logActivity(action, module) {
+    database.activity.unshift({
+        id: generateId(),
+        action,
         module,
         date: new Date().toISOString()
     });
 
-    db.activity = db.activity.slice(0, 50);
+    database.activity = database.activity.slice(0, 100);
 }
 
-function commitRecord(message, module) {
-    addActivity(message, module);
-
-    if (saveDatabase()) {
-        renderAll();
-        showToast(message);
-    }
-}
-
-function resetForm(formId) {
-    const form = document.getElementById(formId);
-
-    if (!form) return;
-
-    form.reset();
-
-    const hidden = form.querySelector(
-        'input[type="hidden"]'
-    );
-
-    if (hidden) {
-        hidden.value = "";
-    }
-}
 
 /* =====================================================
-   3. NAVIGATION
+   5. MODULE CONFIGURATION
 ===================================================== */
 
-const navigationLinks = document.querySelectorAll(".nav-link");
-
-const sections = document.querySelectorAll(
-    ".content-section"
-);
-
-const sidebar = document.getElementById("sidebar");
-
-const menuToggle = document.getElementById("menu-toggle");
-
-function showSection(sectionId) {
-    const target = document.getElementById(sectionId);
-
-    if (
-        !target ||
-        !target.classList.contains("content-section")
-    ) {
-        sectionId = "dashboard";
-    }
-
-    sections.forEach(section => {
-        section.classList.toggle(
-            "active",
-            section.id === sectionId
-        );
-    });
-
-    navigationLinks.forEach(link => {
-        link.classList.toggle(
-            "active",
-            link.dataset.section === sectionId
-        );
-    });
-
-    sidebar?.classList.remove("open");
-
-    window.scrollTo({
-        top: 0,
-        behavior: "smooth"
-    });
-}
-
-navigationLinks.forEach(link => {
-    link.addEventListener("click", event => {
-        event.preventDefault();
-
-        const sectionId = link.dataset.section;
-
-        showSection(sectionId);
-
-        history.replaceState(
-            null,
-            "",
-            `#${sectionId}`
-        );
-    });
-});
-
-if (menuToggle) {
-    menuToggle.addEventListener("click", () => {
-        sidebar?.classList.toggle("open");
-    });
-}
-
-window.addEventListener("hashchange", () => {
-    showSection(
-        location.hash.slice(1) || "dashboard"
-    );
-});
-
-/* =====================================================
-   4. FORM CONFIGURATIONS
-===================================================== */
-
-const formConfigurations = {
+const MODULES = {
 
     buyers: {
         form: "buyer-form",
-        table: "buyer-records",
-        module: "Market Intelligence",
-        message: "Buyer",
+        body: "buyer-records",
+        name: "Market Intelligence",
 
         fields: {
             name: "buyer-name",
@@ -295,20 +312,20 @@ const formConfigurations = {
             type: "buyer-type"
         },
 
-        columns: [
-            record => record.name,
-            record => record.location,
-            record => record.product,
-            record => numberFormat(record.quantity) + " tonnes",
-            record => money(record.price)
+        columns: record => [
+            escapeHTML(record.name),
+            escapeHTML(record.location),
+            escapeHTML(record.product),
+            formatNumber(record.quantity) + " tonnes",
+            formatMoney(record.price)
         ]
     },
 
+
     suppliers: {
         form: "supplier-form",
-        table: "supplier-records",
-        module: "Suppliers",
-        message: "Supplier",
+        body: "supplier-records",
+        name: "Suppliers",
 
         fields: {
             name: "supplier-name",
@@ -319,23 +336,23 @@ const formConfigurations = {
             capacity: "supplier-capacity"
         },
 
-        columns: [
-            record => record.name,
-            record => record.contact,
-            record => record.location,
-            record => record.category,
-            record => record.product
+        columns: record => [
+            escapeHTML(record.name),
+            escapeHTML(record.contact),
+            escapeHTML(record.location),
+            escapeHTML(record.category),
+            escapeHTML(record.product)
         ]
     },
 
+
     procurement: {
         form: "procurement-form",
-        table: "procurement-records",
-        module: "Procurement",
-        message: "Procurement",
+        body: "procurement-records",
+        name: "Procurement",
 
         fields: {
-            supplierId: "procurement-supplier",
+            supplier: "procurement-supplier",
             product: "procurement-product",
             quantity: "procurement-quantity",
             price: "procurement-price",
@@ -343,24 +360,24 @@ const formConfigurations = {
             reference: "procurement-reference"
         },
 
-        columns: [
-            record => record.reference,
-            record => record.supplierName,
-            record => record.product,
-            record => numberFormat(record.quantity) + " tonnes",
-            record => money(record.total),
-            record => record.date
+        columns: record => [
+            escapeHTML(record.reference || "—"),
+            escapeHTML(record.supplierName),
+            escapeHTML(record.product),
+            formatNumber(record.quantity) + " tonnes",
+            formatMoney(record.total),
+            formatDate(record.date)
         ]
     },
 
+
     receiving: {
         form: "receiving-form",
-        table: "receiving-records",
-        module: "Receiving",
-        message: "Receiving record",
+        body: "receiving-records",
+        name: "Receiving",
 
         fields: {
-            supplierId: "receiving-supplier",
+            supplier: "receiving-supplier",
             product: "receiving-product",
             gross: "receiving-gross",
             rejected: "receiving-rejected",
@@ -368,22 +385,22 @@ const formConfigurations = {
             date: "receiving-date"
         },
 
-        columns: [
-            record => record.supplierName,
-            record => record.product,
-            record => numberFormat(record.gross) + " tonnes",
-            record => numberFormat(record.rejected) + " tonnes",
-            record => numberFormat(record.accepted) + " tonnes",
-            record => record.grade,
-            record => record.date
+        columns: record => [
+            escapeHTML(record.supplierName),
+            escapeHTML(record.product),
+            formatNumber(record.gross) + " tonnes",
+            formatNumber(record.rejected) + " tonnes",
+            formatNumber(record.accepted) + " tonnes",
+            escapeHTML(record.grade),
+            formatDate(record.date)
         ]
     },
 
+
     inventory: {
         form: "inventory-form",
-        table: "inventory-records",
-        module: "Inventory",
-        message: "Inventory record",
+        body: "inventory-records",
+        name: "Inventory",
 
         fields: {
             product: "inventory-product",
@@ -393,23 +410,26 @@ const formConfigurations = {
             minimum: "inventory-minimum"
         },
 
-        columns: [
-            record => record.product,
-            record => numberFormat(record.quantity) + " tonnes",
-            record => record.location,
-            record => record.batch,
-
-            record => Number(record.quantity) <= Number(record.minimum)
+        columns: record => {
+            const status = Number(record.quantity) <= Number(record.minimum)
                 ? "Low Stock"
-                : "Available"
-        ]
+                : "Available";
+
+            return [
+                escapeHTML(record.product),
+                formatNumber(record.quantity) + " tonnes",
+                escapeHTML(record.location),
+                escapeHTML(record.batch || "—"),
+                escapeHTML(status)
+            ];
+        }
     },
+
 
     production: {
         form: "production-form",
-        table: "production-records",
-        module: "Production",
-        message: "Production batch",
+        body: "production-records",
+        name: "Production",
 
         fields: {
             batch: "production-batch",
@@ -420,29 +440,28 @@ const formConfigurations = {
             status: "production-status"
         },
 
-        columns: [
-            record => record.batch,
-            record => record.product,
-            record => numberFormat(record.input),
-            record => numberFormat(record.output),
+        columns: record => {
+            const yieldPercentage = record.input > 0
+                ? (record.output / record.input) * 100
+                : 0;
 
-            record => Number(record.input) > 0
-                ? numberFormat(
-                    Number(record.output) /
-                    Number(record.input) * 100
-                ) + "%"
-                : "0%",
-
-            record => record.date,
-            record => record.status
-        ]
+            return [
+                escapeHTML(record.batch),
+                escapeHTML(record.product),
+                formatNumber(record.input) + " tonnes",
+                formatNumber(record.output) + " tonnes",
+                yieldPercentage.toFixed(1) + "%",
+                formatDate(record.date),
+                escapeHTML(record.status)
+            ];
+        }
     },
+
 
     sales: {
         form: "sales-form",
-        table: "sales-records",
-        module: "Sales",
-        message: "Sales order",
+        body: "sales-records",
+        name: "Sales",
 
         fields: {
             customer: "sales-customer",
@@ -453,22 +472,22 @@ const formConfigurations = {
             status: "sales-status"
         },
 
-        columns: [
-            record => record.customer,
-            record => record.product,
-            record => numberFormat(record.quantity) + " tonnes",
-            record => money(record.price),
-            record => money(record.total),
-            record => record.date,
-            record => record.status
+        columns: record => [
+            escapeHTML(record.customer),
+            escapeHTML(record.product),
+            formatNumber(record.quantity) + " tonnes",
+            formatMoney(record.price),
+            formatMoney(record.total),
+            formatDate(record.date),
+            escapeHTML(record.status)
         ]
     },
 
+
     logistics: {
         form: "logistics-form",
-        table: "logistics-records",
-        module: "Logistics",
-        message: "Shipment",
+        body: "logistics-records",
+        name: "Logistics",
 
         fields: {
             reference: "logistics-reference",
@@ -481,22 +500,22 @@ const formConfigurations = {
             status: "logistics-status"
         },
 
-        columns: [
-            record => record.reference,
-            record => record.recipient,
-            record => record.product,
-            record => numberFormat(record.quantity) + " tonnes",
-            record => record.destination,
-            record => record.transport,
-            record => record.status
+        columns: record => [
+            escapeHTML(record.reference),
+            escapeHTML(record.recipient),
+            escapeHTML(record.product),
+            formatNumber(record.quantity) + " tonnes",
+            escapeHTML(record.destination),
+            escapeHTML(record.transport),
+            escapeHTML(record.status)
         ]
     },
 
+
     finance: {
         form: "finance-form",
-        table: "finance-records",
-        module: "Finance",
-        message: "Expense",
+        body: "finance-records",
+        name: "Finance",
 
         fields: {
             description: "finance-description",
@@ -505,308 +524,288 @@ const formConfigurations = {
             date: "finance-date"
         },
 
-        columns: [
-            record => record.description,
-            record => record.category,
-            record => money(record.amount),
-            record => record.date
+        columns: record => [
+            escapeHTML(record.description),
+            escapeHTML(record.category),
+            formatMoney(record.amount),
+            formatDate(record.date)
         ]
     }
+
 };
 
-/* =====================================================
-   5. FORM SUPPORT
-===================================================== */
-
-function ensureHiddenId(form) {
-    if (!form) return;
-
-    let hidden = form.querySelector(
-        'input[type="hidden"]'
-    );
-
-    if (!hidden) {
-        hidden = document.createElement("input");
-
-        hidden.type = "hidden";
-        hidden.name = "record-id";
-
-        form.appendChild(hidden);
-    }
-}
-
-Object.values(formConfigurations).forEach(configuration => {
-    ensureHiddenId(
-        document.getElementById(configuration.form)
-    );
-});
 
 /* =====================================================
    6. FORM DATA COLLECTION
 ===================================================== */
 
-function collectFormData(configuration) {
-    const data = {};
+function collectFormData(collection) {
+    const config = MODULES[collection];
 
-    Object.entries(configuration.fields).forEach(
-        ([key, inputId]) => {
+    const record = {};
 
-            const input = document.getElementById(inputId);
+    Object.entries(config.fields).forEach(([key, fieldId]) => {
+        const element = document.getElementById(fieldId);
 
-            if (!input) return;
-
-            data[key] = input.type === "number"
-                ? Number(input.value) || 0
-                : input.value.trim();
-        }
-    );
-
-    return data;
-}
-
-function validateFormData(collection, data) {
-
-    const requiredFields = {
-        buyers: ["name", "product"],
-        suppliers: ["name", "product"],
-        procurement: ["supplierId", "product", "date"],
-        receiving: ["supplierId", "product", "date"],
-        inventory: ["product", "location"],
-        production: ["batch", "product", "date"],
-        sales: ["customer", "product", "date"],
-        logistics: ["recipient", "product", "destination"],
-        finance: ["description", "category", "date"]
-    };
-
-    const required = requiredFields[collection] || [];
-
-    for (const field of required) {
-        if (
-            data[field] === undefined ||
-            data[field] === null ||
-            data[field] === ""
-        ) {
-            throw new Error(
-                "Please complete all required fields."
-            );
-        }
-    }
-
-    const numericFields = {
-        buyers: ["quantity", "price"],
-        suppliers: ["capacity"],
-        procurement: ["quantity", "price"],
-        receiving: ["gross", "rejected"],
-        inventory: ["quantity", "minimum"],
-        production: ["input", "output"],
-        sales: ["quantity", "price"],
-        logistics: ["quantity"],
-        finance: ["amount"]
-    };
-
-    (numericFields[collection] || []).forEach(field => {
+        if (!element) return;
 
         if (
-            data[field] !== undefined &&
-            data[field] < 0
+            element.type === "number"
         ) {
-            throw new Error(
-                "Negative values are not permitted."
-            );
+            record[key] = Number(element.value) || 0;
+        } else {
+            record[key] = element.value.trim();
         }
     });
 
-    if (
-        collection === "receiving" &&
-        data.rejected > data.gross
-    ) {
-        throw new Error(
-            "Rejected weight cannot exceed gross weight."
-        );
+    return record;
+}
+
+
+function getEditingId(form) {
+    let input = form.querySelector('input[name="record-id"]');
+
+    if (!input) {
+        input = document.createElement("input");
+
+        input.type = "hidden";
+        input.name = "record-id";
+
+        form.appendChild(input);
     }
 
-    if (
-        collection === "production" &&
-        data.output > data.input
-    ) {
-        showToast(
-            "Warning: Output exceeds input. Please verify."
-        );
-    }
+    return input.value;
 }
+
+
+function setEditingId(form, id) {
+    let input = form.querySelector('input[name="record-id"]');
+
+    if (!input) {
+        input = document.createElement("input");
+
+        input.type = "hidden";
+        input.name = "record-id";
+
+        form.appendChild(input);
+    }
+
+    input.value = id;
+}
+
 
 /* =====================================================
    7. RECORD PREPARATION
 ===================================================== */
 
-function prepareRecord(collection, data) {
-
-    if (
-        collection === "procurement" ||
-        collection === "receiving"
-    ) {
-
-        const supplier = findRecord(
-            "suppliers",
-            data.supplierId
-        );
-
-        if (!supplier) {
-            throw new Error(
-                "Please register or select a valid supplier."
-            );
-        }
-
-        data.supplierName = supplier.name;
-    }
+function prepareRecord(collection, record) {
 
     if (collection === "procurement") {
 
-        data.total = data.quantity * data.price;
+        const supplier = findRecord("suppliers", record.supplier);
 
-        if (!data.reference) {
-            data.reference = "PUR-" + Date.now();
-        }
+        record.supplierName = supplier
+            ? supplier.name
+            : "Unknown Supplier";
+
+        record.total = record.quantity * record.price;
     }
+
 
     if (collection === "receiving") {
 
-        data.accepted = data.gross - data.rejected;
+        const supplier = findRecord("suppliers", record.supplier);
+
+        record.supplierName = supplier
+            ? supplier.name
+            : "Unknown Supplier";
+
+        record.accepted = Math.max(
+            0,
+            record.gross - record.rejected
+        );
     }
+
 
     if (collection === "sales") {
 
-        data.total = data.quantity * data.price;
+        record.total = record.quantity * record.price;
     }
 
-    return data;
+
+    return record;
 }
 
-/* =====================================================
-   8. FORM SUBMISSION
-===================================================== */
-
-Object.entries(formConfigurations).forEach(
-    ([collection, configuration]) => {
-
-        const form = document.getElementById(
-            configuration.form
-        );
-
-        if (!form) return;
-
-        form.addEventListener("submit", event => {
-
-            event.preventDefault();
-
-            const hiddenId = form.querySelector(
-                'input[type="hidden"]'
-            );
-
-            const editingId = hiddenId?.value || "";
-
-            try {
-
-                let data = collectFormData(configuration);
-
-                validateFormData(collection, data);
-
-                data = prepareRecord(collection, data);
-
-                if (editingId) {
-
-                    const index = db[collection].findIndex(
-                        record => record.id === editingId
-                    );
-
-                    if (index === -1) {
-                        throw new Error(
-                            "Record could not be found."
-                        );
-                    }
-
-                    db[collection][index] = {
-                        ...db[collection][index],
-                        ...data,
-                        updatedAt: new Date().toISOString()
-                    };
-
-                    commitRecord(
-                        configuration.message +
-                        " updated successfully.",
-                        configuration.module
-                    );
-
-                } else {
-
-                    const record = {
-                        id: createId(),
-                        ...data,
-                        createdAt: new Date().toISOString()
-                    };
-
-                    db[collection].unshift(record);
-
-                    commitRecord(
-                        configuration.message +
-                        " saved successfully.",
-                        configuration.module
-                    );
-                }
-
-                resetForm(configuration.form);
-
-            } catch (error) {
-
-                showToast(
-                    error.message || "Unable to save record."
-                );
-            }
-        });
-    }
-);
 
 /* =====================================================
-   9. SUPPLIER DROPDOWNS
+   8. FORM VALIDATION
 ===================================================== */
 
-function renderSupplierOptions() {
+function validateRecord(collection, record) {
 
-    const supplierFields = [
-        "procurement-supplier",
-        "receiving-supplier"
-    ];
+    const config = MODULES[collection];
 
-    supplierFields.forEach(fieldId => {
+    for (const [key, fieldId] of Object.entries(config.fields)) {
 
-        const select = document.getElementById(fieldId);
-
-        if (!select) return;
-
-        const previousValue = select.value;
-
-        select.innerHTML =
-            '<option value="">Select supplier</option>';
-
-        db.suppliers.forEach(supplier => {
-
-            const option = document.createElement("option");
-
-            option.value = supplier.id;
-            option.textContent = supplier.name;
-
-            select.appendChild(option);
-        });
+        const element = document.getElementById(fieldId);
 
         if (
-            db.suppliers.some(
-                item => item.id === previousValue
+            element &&
+            element.required &&
+            !element.value.trim()
+        ) {
+            showToast("Please complete all required fields.");
+            element.focus();
+
+            return false;
+        }
+    }
+
+
+    const numericFields = [
+        "quantity",
+        "price",
+        "gross",
+        "rejected",
+        "input",
+        "output",
+        "amount",
+        "capacity",
+        "minimum"
+    ];
+
+    for (const key of numericFields) {
+
+        if (
+            key in record &&
+            (
+                !Number.isFinite(Number(record[key])) ||
+                Number(record[key]) < 0
             )
         ) {
-            select.value = previousValue;
+            showToast("Please enter valid positive numbers.");
+            return false;
         }
-    });
+    }
+
+
+    if (
+        collection === "receiving" &&
+        record.rejected > record.gross
+    ) {
+        showToast("Rejected weight cannot exceed gross weight.");
+        return false;
+    }
+
+
+    if (
+        collection === "production" &&
+        record.output > record.input
+    ) {
+        const confirmed = window.confirm(
+            "Production output exceeds input quantity. Continue?"
+        );
+
+        if (!confirmed) return false;
+    }
+
+
+    if (
+        collection === "procurement" &&
+        !findRecord("suppliers", record.supplier)
+    ) {
+        showToast("Please select a registered supplier.");
+        return false;
+    }
+
+
+    if (
+        collection === "receiving" &&
+        !findRecord("suppliers", record.supplier)
+    ) {
+        showToast("Please select a registered supplier.");
+        return false;
+    }
+
+
+    return true;
 }
+
+
+/* =====================================================
+   9. SAVE AND UPDATE RECORDS
+===================================================== */
+
+function handleFormSubmit(collection, event) {
+
+    event.preventDefault();
+
+    const form = event.currentTarget;
+
+    const record = collectFormData(collection);
+
+    if (!validateRecord(collection, record)) {
+        return;
+    }
+
+    prepareRecord(collection, record);
+
+    const editingId = getEditingId(form);
+
+    if (editingId) {
+
+        const index = database[collection].findIndex(
+            item => item.id === editingId
+        );
+
+        if (index === -1) {
+            showToast("Record could not be found.");
+            return;
+        }
+
+        record.id = editingId;
+
+        record.createdAt =
+            database[collection][index].createdAt ||
+            new Date().toISOString();
+
+        record.updatedAt = new Date().toISOString();
+
+        database[collection][index] = record;
+
+        logActivity(
+            "Updated " + collection + " record",
+            MODULES[collection].name
+        );
+
+        if (!commitDatabase("Record updated successfully.")) {
+            return;
+        }
+
+    } else {
+
+        record.id = generateId();
+
+        record.createdAt = new Date().toISOString();
+
+        database[collection].unshift(record);
+
+        logActivity(
+            "Added new " + collection + " record",
+            MODULES[collection].name
+        );
+
+        if (!commitDatabase("Record saved successfully.")) {
+            return;
+        }
+    }
+
+    form.reset();
+    setEditingId(form, "");
+    updateSupplierDropdowns();
+    renderAll();
+}
+
 
 /* =====================================================
    10. TABLE RENDERING
@@ -814,24 +813,22 @@ function renderSupplierOptions() {
 
 function renderTable(collection) {
 
-    const configuration = formConfigurations[collection];
+    const config = MODULES[collection];
 
-    if (!configuration) return;
+    const body = document.getElementById(config.body);
 
-    const tbody = document.getElementById(
-        configuration.table
-    );
+    if (!body) return;
 
-    if (!tbody) return;
-
-    const records = db[collection];
+    const records = database[collection];
 
     if (!records.length) {
 
-        tbody.innerHTML = `
+        const columnCount = config.columns(records[0] || {}).length + 1;
+
+        body.innerHTML = `
             <tr>
-                <td colspan="12" class="empty-row">
-                    No records available yet.
+                <td colspan="${columnCount}" class="empty-row">
+                    No records available.
                 </td>
             </tr>
         `;
@@ -839,23 +836,19 @@ function renderTable(collection) {
         return;
     }
 
-    tbody.innerHTML = records.map(record => {
 
-        const cells = configuration.columns.map(column => {
+    body.innerHTML = records.map(record => {
 
-            return `
-                <td>${escapeHTML(column(record))}</td>
-            `;
-
-        }).join("");
+        const cells = config.columns(record);
 
         return `
             <tr>
-                ${cells}
+                ${cells.map(cell => `<td>${cell}</td>`).join("")}
 
                 <td>
                     <button
-                        class="secondary-button"
+                        type="button"
+                        class="edit-btn"
                         data-action="edit"
                         data-collection="${collection}"
                         data-id="${escapeHTML(record.id)}">
@@ -863,7 +856,8 @@ function renderTable(collection) {
                     </button>
 
                     <button
-                        class="danger-button"
+                        type="button"
+                        class="delete-btn"
                         data-action="delete"
                         data-collection="${collection}"
                         data-id="${escapeHTML(record.id)}">
@@ -876,60 +870,36 @@ function renderTable(collection) {
     }).join("");
 }
 
+
 /* =====================================================
    11. EDIT RECORDS
 ===================================================== */
 
 function editRecord(collection, id) {
 
-    const configuration = formConfigurations[collection];
-
     const record = findRecord(collection, id);
 
-    if (!configuration || !record) return;
+    if (!record) {
+        showToast("Record not found.");
+        return;
+    }
 
-    const form = document.getElementById(
-        configuration.form
-    );
+    const config = MODULES[collection];
+
+    const form = document.getElementById(config.form);
 
     if (!form) return;
 
-    Object.entries(configuration.fields).forEach(
-        ([key, inputId]) => {
+    Object.entries(config.fields).forEach(([key, fieldId]) => {
 
-            const input = document.getElementById(inputId);
+        const element = document.getElementById(fieldId);
 
-            if (input) {
-                input.value = record[key] ?? "";
-            }
-        }
-    );
+        if (!element) return;
 
-    ensureHiddenId(form);
+        element.value = record[key] ?? "";
+    });
 
-    const hiddenId = form.querySelector(
-        'input[type="hidden"]'
-    );
-
-    hiddenId.value = record.id;
-
-    const sectionMap = {
-        buyers: "market-intelligence",
-        suppliers: "suppliers",
-        procurement: "procurement",
-        receiving: "receiving",
-        inventory: "inventory",
-        production: "production",
-        sales: "sales",
-        logistics: "logistics",
-        finance: "finance"
-    };
-
-    const sectionId = sectionMap[collection];
-
-    if (sectionId) {
-        showSection(sectionId);
-    }
+    setEditingId(form, id);
 
     form.scrollIntoView({
         behavior: "smooth",
@@ -939,367 +909,375 @@ function editRecord(collection, id) {
     showToast("Editing selected record.");
 }
 
+
 /* =====================================================
    12. DELETE RECORDS
 ===================================================== */
 
 function deleteRecord(collection, id) {
 
-    if (!formConfigurations[collection]) return;
-
     const record = findRecord(collection, id);
 
     if (!record) return;
 
-    const confirmed = confirm(
+    const confirmed = window.confirm(
         "Are you sure you want to delete this record?"
     );
 
     if (!confirmed) return;
 
-    db[collection] = db[collection].filter(
+    database[collection] = database[collection].filter(
         item => item.id !== id
     );
 
-    commitRecord(
-        "Record deleted successfully.",
-        "Data Management"
+    logActivity(
+        "Deleted " + collection + " record",
+        MODULES[collection].name
     );
+
+    if (!commitDatabase("Record deleted.")) {
+        return;
+    }
+
+    updateSupplierDropdowns();
 }
+
 
 /* =====================================================
-   13. TABLE ACTIONS
+   13. TABLE ACTION LISTENERS
 ===================================================== */
 
-document.addEventListener("click", event => {
+function initializeTableActions() {
 
-    const button = event.target.closest("[data-action]");
+    document.addEventListener("click", event => {
 
-    if (!button) return;
+        const button = event.target.closest("[data-action]");
 
-    const action = button.dataset.action;
-    const collection = button.dataset.collection;
-    const id = button.dataset.id;
+        if (!button) return;
 
-    if (action === "edit") {
-        editRecord(collection, id);
-    }
+        const action = button.dataset.action;
+        const collection = button.dataset.collection;
+        const id = button.dataset.id;
 
-    if (action === "delete") {
-        deleteRecord(collection, id);
-    }
-});
+        if (!MODULES[collection]) return;
+
+        if (action === "edit") {
+            editRecord(collection, id);
+        }
+
+        if (action === "delete") {
+            deleteRecord(collection, id);
+        }
+
+    });
+
+}
+
 
 /* =====================================================
-   14. DASHBOARD STATISTICS
+   14. SUPPLIER DROPDOWNS
 ===================================================== */
 
-function setText(id, value) {
+function updateSupplierDropdowns() {
 
-    const element = document.getElementById(id);
+    const dropdownIds = [
+        "procurement-supplier",
+        "receiving-supplier"
+    ];
 
-    if (element) {
-        element.textContent = value;
-    }
+    dropdownIds.forEach(id => {
+
+        const select = document.getElementById(id);
+
+        if (!select) return;
+
+        const selectedValue = select.value;
+
+        select.innerHTML = `
+            <option value="">Select supplier</option>
+        `;
+
+        database.suppliers.forEach(supplier => {
+
+            const option = document.createElement("option");
+
+            option.value = supplier.id;
+            option.textContent = supplier.name;
+
+            select.appendChild(option);
+        });
+
+        if (
+            database.suppliers.some(
+                supplier => supplier.id === selectedValue
+            )
+        ) {
+            select.value = selectedValue;
+        }
+
+    });
+
 }
 
-function sum(collection, field) {
 
-    return db[collection].reduce(
-        (total, record) => {
-
-            return total + Number(record[field] || 0);
-
-        },
-        0
-    );
-}
+/* =====================================================
+   15. DASHBOARD STATISTICS
+===================================================== */
 
 function renderDashboard() {
 
-    setText(
-        "dashboard-suppliers",
-        db.suppliers.length
-    );
+    const suppliers = database.suppliers.length;
+    const buyers = database.buyers.length;
+    const inventory = database.inventory.length;
+    const orders = database.sales.length;
 
-    setText(
-        "dashboard-buyers",
-        db.buyers.length
-    );
+    const salesValue = totalOf("sales", "total");
+    const expenses = totalOf("finance", "amount");
 
-    setText(
-        "dashboard-inventory",
-        db.inventory.length
-    );
+    const balance = salesValue - expenses;
 
-    setText(
-        "dashboard-orders",
-        db.sales.length
-    );
+
+    setText("dashboard-suppliers", suppliers);
+    setText("dashboard-buyers", buyers);
+    setText("dashboard-inventory", inventory);
+    setText("dashboard-orders", orders);
+
+    setText("dashboard-sales-value", formatMoney(salesValue));
+    setText("dashboard-expenses", formatMoney(expenses));
+
+    setText("dashboard-sales-snapshot", formatMoney(salesValue));
+    setText("dashboard-expenses-snapshot", formatMoney(expenses));
+    setText("dashboard-balance", formatMoney(balance));
+
 
     setText(
         "overview-procurement",
-        db.procurement.length
+        database.procurement.length
     );
 
     setText(
         "overview-receiving",
-        db.receiving.length
+        database.receiving.length
     );
 
     setText(
         "overview-production",
-        db.production.length
+        database.production.length
     );
 
     setText(
         "overview-logistics",
-        db.logistics.length
+        database.logistics.length
     );
 
-    const salesTotal = sum("sales", "total");
 
-    const expenseTotal = sum("finance", "amount");
+    const activityBody = document.getElementById("recent-activity");
 
-    setText(
-        "dashboard-sales-value",
-        money(salesTotal)
-    );
+    if (activityBody) {
 
-    setText(
-        "dashboard-expenses",
-        money(expenseTotal)
-    );
-setText(
-   "dashboard-sales-snapshot",
-        money(salesTotal)
-       );
-setText(
-   "dashboard-expenses-snapshot", 
-   money(expenseTotal)
-);
-    setText(
-        "dashboard-balance",
-        money(salesTotal - expenseTotal)
-    );
+        if (!database.activity.length) {
 
-    const activity = document.getElementById(
-        "recent-activity"
-    );
-
-    if (activity) {
-
-        activity.innerHTML = db.activity.length
-
-            ? db.activity.slice(0, 8).map(item => `
-
-                <tr>
-                    <td>${escapeHTML(item.message)}</td>
-
-                    <td>${escapeHTML(item.module)}</td>
-
-                    <td>
-                        ${escapeHTML(
-                            new Date(item.date).toLocaleString()
-                        )}
-                    </td>
-                </tr>
-
-            `).join("")
-
-            : `
+            activityBody.innerHTML = `
                 <tr>
                     <td colspan="3" class="empty-row">
                         No activities recorded yet.
                     </td>
                 </tr>
             `;
+
+        } else {
+
+            activityBody.innerHTML = database.activity
+                .slice(0, 8)
+                .map(activity => `
+                    <tr>
+                        <td>${escapeHTML(activity.action)}</td>
+                        <td>${escapeHTML(activity.module)}</td>
+                        <td>${formatDateTime(activity.date)}</td>
+                    </tr>
+                `)
+                .join("");
+
+        }
     }
+
 
     setText(
         "current-date",
-        new Date().toLocaleDateString(
-            "en-GH",
-            {
-                weekday: "long",
-                year: "numeric",
-                month: "long",
-                day: "numeric"
-            }
-        )
+        new Date().toLocaleDateString("en-GB", {
+            weekday: "long",
+            day: "2-digit",
+            month: "long",
+            year: "numeric"
+        })
     );
+
 }
 
+
 /* =====================================================
-   15. MARKET INTELLIGENCE
+   16. MARKET INTELLIGENCE STATISTICS
 ===================================================== */
 
-function renderMarketStatistics() {
+function renderMarketStats() {
 
-    setText(
-        "market-buyer-count",
-        db.buyers.length
+    const buyers = database.buyers;
+
+    const uniqueProducts = new Set(
+        buyers.map(buyer => buyer.product)
     );
+
+    const totalDemand = buyers.reduce(
+        (total, buyer) => total + (Number(buyer.quantity) || 0),
+        0
+    );
+
+    setText("market-buyer-count", buyers.length);
 
     setText(
         "market-demand-count",
-        db.buyers.length
-    );
-
-    const products = new Set(
-        db.buyers
-            .map(record => record.product)
-            .filter(Boolean)
+        formatNumber(totalDemand) + " tonnes"
     );
 
     setText(
         "market-product-count",
-        products.size
+        uniqueProducts.size
     );
+
 }
 
+
 /* =====================================================
-   16. INVENTORY STATISTICS
+   17. INVENTORY STATISTICS
 ===================================================== */
 
-function renderInventoryStatistics() {
+function renderInventoryStats() {
 
-    const total = sum("inventory", "quantity");
+    const inventory = database.inventory;
 
-    const lowStock = db.inventory.filter(
-        record =>
-            Number(record.quantity) <=
-            Number(record.minimum)
+    const total = inventory.reduce(
+        (sum, item) => sum + (Number(item.quantity) || 0),
+        0
+    );
+
+    const lowStock = inventory.filter(
+        item => Number(item.quantity) <= Number(item.minimum)
     ).length;
 
-    setText(
-        "inventory-count",
-        db.inventory.length
-    );
+    setText("inventory-count", inventory.length);
 
-    setText(
-        "inventory-total",
-        numberFormat(total)
-    );
+    setText("inventory-total", formatNumber(total));
 
-    setText(
-        "inventory-low",
-        lowStock
-    );
+    setText("inventory-low", lowStock);
+
 }
 
+
 /* =====================================================
-   17. FINANCE STATISTICS
+   18. FINANCE STATISTICS
 ===================================================== */
 
-function renderFinanceStatistics() {
+function renderFinanceStats() {
 
-    const sales = sum("sales", "total");
+    const sales = totalOf("sales", "total");
 
-    const expenses = sum("finance", "amount");
+    const expenses = totalOf("finance", "amount");
 
-    setText(
-        "finance-sales",
-        money(sales)
-    );
+    const balance = sales - expenses;
 
-    setText(
-        "finance-expenses",
-        money(expenses)
-    );
+    setText("finance-sales", formatMoney(sales));
 
-    setText(
-        "finance-balance",
-        money(sales - expenses)
-    );
+    setText("finance-expenses", formatMoney(expenses));
+
+    setText("finance-balance", formatMoney(balance));
+
 }
 
+
 /* =====================================================
-   18. REPORT STATISTICS
+   19. REPORTS & ANALYTICS
 ===================================================== */
-function renderReportStatistics() {
 
-    // Safely calculate monetary values
-    const getRecordAmount = (record) => {
-        return Number(
-            record.total ??
-            record.amount ??
-            record.totalAmount ??
-            record.value ??
-            0
-        ) || 0;
-    };
+function renderReports() {
 
-    // Procurement
-    const procurementTotal = db.procurement.reduce(
-        (sum, record) => sum + getRecordAmount(record),
-        0
+    const procurement = totalOf("procurement", "total");
+
+    const sales = totalOf("sales", "total");
+
+    const expenses = totalOf("finance", "amount");
+
+    const inventory = database.inventory.length;
+
+
+    setText("report-procurement", formatMoney(procurement));
+
+    setText("report-sales", formatMoney(sales));
+
+    setText("report-expenses", formatMoney(expenses));
+
+    setText("report-inventory", inventory);
+
+
+    setText(
+        "report-inventory-count",
+        inventory
     );
 
-    // Sales
-    const salesTotal = db.sales.reduce(
-        (sum, record) => sum + getRecordAmount(record),
-        0
+    setText(
+        "report-supplier-count",
+        database.suppliers.length
     );
 
-    // Expenses
-    const expenseRecords = db.finance.filter(record => {
-        const category = String(
-            record.type ??
-            record.category ??
-            record.transactionType ??
-            ""
-        ).toLowerCase();
-
-        return category.includes("expense");
-    });
-
-    const expenseTotal = expenseRecords.reduce(
-        (sum, record) => sum + getRecordAmount(record),
-        0
+    setText(
+        "report-procurement-count",
+        database.procurement.length
     );
 
-    // Inventory and supplier records
-    const inventoryCount = db.inventory.length;
-    const supplierCount = db.suppliers.length;
-
-    // Financial balance
-    const balance = salesTotal - expenseTotal;
-
-    // Main report statistics
-    setText("report-procurement", money(procurementTotal));
-    setText("report-sales", money(salesTotal));
-    setText("report-expenses", money(expenseTotal));
-    setText("report-inventory", inventoryCount);
-
-    // Performance indicators
-    setText("report-inventory-count", inventoryCount);
-    setText("report-supplier-count", supplierCount);
-
-    // Operational activity counts
-    setText("report-procurement-count", db.procurement.length);
-    setText("report-receiving-count", db.receiving.length);
-    setText("report-production-count", db.production.length);
-    setText("report-orders-count", db.sales.length);
-    setText("report-logistics-count", db.logistics.length);
-
-    // Financial summary
-    setText("report-financial-revenue", money(salesTotal));
-    setText("report-financial-expenses", money(expenseTotal));
-    setText("report-financial-balance", money(balance));
-
-    // Performance bars
-    const maximum = Math.max(
-        procurementTotal,
-        salesTotal,
-        1
+    setText(
+        "report-receiving-count",
+        database.receiving.length
     );
 
-    const procurementWidth =
-        (procurementTotal / maximum) * 100;
+    setText(
+        "report-production-count",
+        database.production.length
+    );
 
-    const salesWidth =
-        (salesTotal / maximum) * 100;
+    setText(
+        "report-orders-count",
+        database.sales.length
+    );
+
+    setText(
+        "report-logistics-count",
+        database.logistics.length
+    );
+
+
+    setText(
+        "report-financial-revenue",
+        formatMoney(sales)
+    );
+
+    setText(
+        "report-financial-expenses",
+        formatMoney(expenses)
+    );
+
+    setText(
+        "report-financial-balance",
+        formatMoney(sales - expenses)
+    );
+
+
+    const maximum = Math.max(procurement, sales, 1);
+
+    const procurementPercentage =
+        Math.min((procurement / maximum) * 100, 100);
+
+    const salesPercentage =
+        Math.min((sales / maximum) * 100, 100);
+
 
     const procurementBar = document.getElementById(
         "report-procurement-bar"
@@ -1309,103 +1287,270 @@ function renderReportStatistics() {
         "report-sales-bar"
     );
 
+
     if (procurementBar) {
-        procurementBar.style.width =
-            procurementWidth + "%";
+        procurementBar.style.width = procurementPercentage + "%";
     }
 
     if (salesBar) {
-        salesBar.style.width =
-            salesWidth + "%";
+        salesBar.style.width = salesPercentage + "%";
     }
 
-    // Status messages
+
     setText(
         "report-procurement-status",
-        db.procurement.length
-            ? "Procurement records available"
-            : "Awaiting records"
+        procurement > 0
+            ? "Procurement activity recorded"
+            : "Awaiting procurement records"
     );
 
     setText(
         "report-sales-status",
-        db.sales.length
-            ? "Sales records available"
-            : "Awaiting records"
+        sales > 0
+            ? "Sales activity recorded"
+            : "Awaiting sales records"
     );
+
 }
 
+
 /* =====================================================
-   19. TABLE SEARCH
+   20. RENDER ALL MODULES
 ===================================================== */
 
-document.querySelectorAll("[data-search]").forEach(input => {
+function renderAll() {
 
-    input.addEventListener("input", () => {
-
-        const tableId = input.dataset.search;
-
-        const table = document.getElementById(tableId);
-
-        if (!table) return;
-
-        const query = input.value.toLowerCase();
-
-        table.querySelectorAll("tbody tr").forEach(row => {
-
-            row.style.display = row.textContent
-                .toLowerCase()
-                .includes(query)
-                ? ""
-                : "none";
-        });
+    Object.keys(MODULES).forEach(collection => {
+        renderTable(collection);
     });
-});
+
+    renderDashboard();
+
+    renderMarketStats();
+
+    renderInventoryStats();
+
+    renderFinanceStats();
+
+    renderReports();
+
+    updateSupplierDropdowns();
+
+}
+
 
 /* =====================================================
-   20. CSV EXPORT
+   21. FORM INITIALIZATION
 ===================================================== */
 
-function exportCSV(collection) {
+function initializeForms() {
 
-    if (!formConfigurations[collection]) return;
+    Object.entries(MODULES).forEach(([collection, config]) => {
 
-    const records = db[collection];
+        const form = document.getElementById(config.form);
 
-    if (!records.length) {
+        if (!form) return;
 
-        showToast("There are no records to export.");
+        form.addEventListener("submit", event => {
+            handleFormSubmit(collection, event);
+        });
 
-        return;
+        form.addEventListener("reset", () => {
+
+            setTimeout(() => {
+                setEditingId(form, "");
+            }, 0);
+
+        });
+
+    });
+
+}
+
+
+/* =====================================================
+   22. NAVIGATION
+===================================================== */
+
+function initializeNavigation() {
+
+    const links = document.querySelectorAll(".nav-link");
+
+    const sections = document.querySelectorAll(".content-section");
+
+    const sidebar = document.getElementById("sidebar");
+
+    const menuToggle = document.getElementById("menu-toggle");
+
+
+    function openSection(sectionId, updateHash = true) {
+
+        const target = document.getElementById(sectionId);
+
+        if (!target || !target.classList.contains("content-section")) {
+            sectionId = "dashboard";
+        }
+
+        sections.forEach(section => {
+            section.classList.toggle(
+                "active",
+                section.id === sectionId
+            );
+        });
+
+        links.forEach(link => {
+            const active = link.dataset.section === sectionId;
+
+            link.classList.toggle("active", active);
+
+            if (active) {
+                link.setAttribute("aria-current", "page");
+            } else {
+                link.removeAttribute("aria-current");
+            }
+        });
+
+        if (updateHash) {
+            history.replaceState(null, "", "#" + sectionId);
+        }
+
+        if (sidebar) {
+            sidebar.classList.remove("open");
+        }
+
+        if (menuToggle) {
+            menuToggle.setAttribute("aria-expanded", "false");
+        }
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+
     }
 
-    const keys = Object.keys(records[0]).filter(
-        key => key !== "id"
-    );
 
-    const rows = [
-        keys,
+    links.forEach(link => {
 
-        ...records.map(record =>
-            keys.map(key => record[key] ?? "")
-        )
-    ];
+        link.addEventListener("click", event => {
 
-    const csv = rows.map(row => {
+            event.preventDefault();
 
-        return row.map(value => {
+            openSection(link.dataset.section);
 
-            return `"${String(value).replace(/"/g, '""')}"`;
+        });
 
-        }).join(",");
+    });
 
-    }).join("\r\n");
+
+    if (menuToggle && sidebar) {
+
+        menuToggle.addEventListener("click", () => {
+
+            const isOpen = sidebar.classList.toggle("open");
+
+            menuToggle.setAttribute(
+                "aria-expanded",
+                String(isOpen)
+            );
+
+        });
+
+    }
+
+
+    document.addEventListener("click", event => {
+
+        if (
+            window.innerWidth <= 760 &&
+            sidebar &&
+            menuToggle &&
+            sidebar.classList.contains("open") &&
+            !sidebar.contains(event.target) &&
+            !menuToggle.contains(event.target)
+        ) {
+            sidebar.classList.remove("open");
+
+            menuToggle.setAttribute("aria-expanded", "false");
+        }
+
+    });
+
+
+    window.addEventListener("hashchange", () => {
+
+        const sectionId = window.location.hash.replace("#", "");
+
+        openSection(sectionId || "dashboard", false);
+
+    });
+
+
+    const initialSection = window.location.hash.replace("#", "");
+
+    openSection(initialSection || "dashboard", false);
+
+}
+
+
+/* =====================================================
+   23. TABLE SEARCH
+===================================================== */
+
+function initializeSearch() {
+
+    document.querySelectorAll("[data-search]").forEach(input => {
+
+        input.addEventListener("input", () => {
+
+            const tableId = input.dataset.search;
+
+            const table = document.getElementById(tableId);
+
+            if (!table) return;
+
+            const rows = table.querySelectorAll("tbody tr");
+
+            const query = input.value.toLowerCase().trim();
+
+            rows.forEach(row => {
+
+                const matches = row.textContent
+                    .toLowerCase()
+                    .includes(query);
+
+                row.style.display = matches ? "" : "none";
+
+            });
+
+        });
+
+    });
+
+}
+
+
+/* =====================================================
+   24. CSV EXPORT
+===================================================== */
+
+function csvSafe(value) {
+
+    let text = String(value ?? "");
+
+    if (/^[\s]*[=+\-@]/.test(text)) {
+        text = "'" + text;
+    }
+
+    return '"' + text.replace(/"/g, '""') + '"';
+}
+
+
+function downloadFile(content, filename, type) {
 
     const blob = new Blob(
-        ["\uFEFF" + csv],
-        {
-            type: "text/csv;charset=utf-8;"
-        }
+        [content],
+        { type }
     );
 
     const url = URL.createObjectURL(blob);
@@ -1413,9 +1558,7 @@ function exportCSV(collection) {
     const link = document.createElement("a");
 
     link.href = url;
-
-    link.download =
-        `hub01-${collection}-${today()}.csv`;
+    link.download = filename;
 
     document.body.appendChild(link);
 
@@ -1425,204 +1568,249 @@ function exportCSV(collection) {
 
     URL.revokeObjectURL(url);
 
+}
+
+
+function exportData(format = "csv") {
+
+    if (format !== "csv") {
+        showToast("Unsupported export format.");
+        return;
+    }
+
+    const rows = [
+        ["MODULE", "RECORD ID", "RECORD DATA"]
+    ];
+
+    Object.entries(MODULES).forEach(([collection]) => {
+
+        database[collection].forEach(record => {
+
+            rows.push([
+                collection,
+                record.id,
+                JSON.stringify(record)
+            ]);
+
+        });
+
+    });
+
+
+    const csv = rows
+        .map(row => row.map(csvSafe).join(","))
+        .join("\n");
+
+
+    downloadFile(
+        "\uFEFF" + csv,
+        "Hub01-Data-Export-" + today() + ".csv",
+        "text/csv;charset=utf-8;"
+    );
+
     showToast("CSV export prepared.");
 }
 
-document.querySelectorAll("[data-export]").forEach(button => {
-
-    button.addEventListener("click", () => {
-
-        exportCSV(button.dataset.export);
-
-    });
-});
 
 /* =====================================================
-   21. BACKUP
+   25. JSON BACKUP
 ===================================================== */
 
-const backupButton = document.getElementById("backup-data");
+function backupDatabase() {
 
-if (backupButton) {
+    const backup = {
+        application: "Hub 01 One System",
+        organisation: "EV Empire Ventures",
+        version: "2.0",
+        exportedAt: new Date().toISOString(),
+        database
+    };
 
-    backupButton.addEventListener("click", () => {
+    downloadFile(
+        JSON.stringify(backup, null, 2),
+        "Hub01-Backup-" + today() + ".json",
+        "application/json"
+    );
 
-        const backup = {
-
-            application: "Hub 01 One System",
-
-            version: "1.1",
-
-            exportedAt: new Date().toISOString(),
-
-            database: db
-
-        };
-
-        const blob = new Blob(
-            [JSON.stringify(backup, null, 2)],
-            {
-                type: "application/json"
-            }
-        );
-
-        const url = URL.createObjectURL(blob);
-
-        const link = document.createElement("a");
-
-        link.href = url;
-
-        link.download =
-            `hub01-backup-${today()}.json`;
-
-        document.body.appendChild(link);
-
-        link.click();
-
-        link.remove();
-
-        URL.revokeObjectURL(url);
-
-        showToast("Data backup downloaded.");
-
-    });
+    showToast("Backup downloaded successfully.");
 }
 
+
 /* =====================================================
-   22. RESTORE BACKUP
+   26. JSON RESTORE
 ===================================================== */
 
-const restoreButton = document.getElementById("restore-data");
+function restoreDatabase(file) {
 
-const restoreFile = document.getElementById("restore-file");
+    if (!file) return;
 
-if (restoreButton && restoreFile) {
+    const reader = new FileReader();
 
-    restoreButton.addEventListener("click", () => {
-
-        restoreFile.click();
-
-    });
-
-    restoreFile.addEventListener("change", async () => {
-
-        const file = restoreFile.files[0];
-
-        if (!file) return;
+    reader.onload = event => {
 
         try {
 
-            const fileText = await file.text();
+            const imported = JSON.parse(event.target.result);
 
-            const backup = JSON.parse(fileText);
+            const importedDatabase = imported.database || imported;
 
-            const restored = backup.database || backup;
-
-            const validCollections = Object.keys(
-                emptyDatabase
-            );
-
-            const isValid = restored &&
-                validCollections.every(key =>
-                    Array.isArray(restored[key])
-                );
-
-            if (!isValid) {
-
-                throw new Error(
-                    "Invalid Hub 01 backup file."
-                );
+            if (
+                !importedDatabase ||
+                typeof importedDatabase !== "object" ||
+                Array.isArray(importedDatabase)
+            ) {
+                throw new Error("Invalid backup structure.");
             }
 
-            const confirmed = confirm(
-                "Restoring this backup will replace the records currently stored in this browser. Continue?"
+            const newDatabase = structuredDatabaseCopy();
+
+            COLLECTIONS.forEach(collection => {
+
+                if (
+                    Array.isArray(importedDatabase[collection])
+                ) {
+                    newDatabase[collection] = importedDatabase[collection];
+                }
+
+            });
+
+
+            const confirmed = window.confirm(
+                "Restoring this backup will replace the current browser records. Continue?"
             );
 
-            if (!confirmed) {
+            if (!confirmed) return;
 
-                restoreFile.value = "";
+
+            const previousDatabase = database;
+
+            database = newDatabase;
+
+            if (!saveDatabase()) {
+
+                database = previousDatabase;
+
+                showToast("Restore failed. Existing records were preserved.");
 
                 return;
             }
 
-            db = {
-                ...structuredClone(emptyDatabase),
-                ...restored
-            };
+            renderAll();
 
-            if (saveDatabase()) {
-
-                renderAll();
-
-                showToast(
-                    "Backup restored successfully."
-                );
-            }
+            showToast("Backup restored successfully.");
 
         } catch (error) {
 
-            showToast(
-                error.message ||
-                "Backup restoration failed."
-            );
+            console.error("Restore error:", error);
+
+            showToast("Invalid or unsupported backup file.");
 
         }
 
-        restoreFile.value = "";
+    };
 
-    });
+    reader.readAsText(file);
+
 }
 
+
 /* =====================================================
-   23. RENDER ALL MODULES
+   27. BACKUP AND RESTORE LISTENERS
 ===================================================== */
 
-function renderAll() {
+function initializeBackupSystem() {
 
-    renderSupplierOptions();
+    const backupButton = document.getElementById("backup-data");
 
-    Object.keys(formConfigurations).forEach(
-        collection => {
+    const restoreButton = document.getElementById("restore-data");
 
-            renderTable(collection);
+    const restoreInput = document.getElementById("restore-file");
 
-        }
-    );
 
-    renderDashboard();
+    if (backupButton) {
 
-    renderMarketStatistics();
+        backupButton.addEventListener("click", backupDatabase);
 
-    renderInventoryStatistics();
+    }
 
-    renderFinanceStatistics();
 
-    renderReportStatistics();
+    if (restoreButton && restoreInput) {
+
+        restoreButton.addEventListener("click", () => {
+            restoreInput.click();
+        });
+
+    }
+
+
+    if (restoreInput) {
+
+        restoreInput.addEventListener("change", event => {
+
+            const file = event.target.files[0];
+
+            if (file) {
+                restoreDatabase(file);
+            }
+
+            event.target.value = "";
+
+        });
+
+    }
+
 }
 
+
 /* =====================================================
-   24. INITIALIZE APPLICATION
+   28. APPLICATION INITIALIZATION
 ===================================================== */
 
 function initializeHub01() {
 
+    console.log(
+        "HUB 01 ONE SYSTEM™ — VERSION 2.0 INITIALIZING"
+    );
+
+    initializeForms();
+
+    initializeTableActions();
+
+    initializeNavigation();
+
+    initializeSearch();
+
+    initializeBackupSystem();
+
     renderAll();
 
-    const initialSection = location.hash.slice(1);
-
-    showSection(
-        document.getElementById(initialSection)
-            ?.classList.contains("content-section")
-            ? initialSection
-            : "dashboard"
-    );
-
     console.log(
-        "Hub 01 One System™ v1.1 initialized successfully."
+        "HUB 01 ONE SYSTEM™ — READY"
     );
+
 }
 
-document.addEventListener(
-    "DOMContentLoaded",
-    initializeHub01
-);
+
+/* =====================================================
+   29. START APPLICATION
+===================================================== */
+
+if (document.readyState === "loading") {
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        initializeHub01
+    );
+
+} else {
+
+    initializeHub01();
+
+}
+
+
+/* =====================================================
+   30. GLOBAL EXPORT FUNCTION
+===================================================== */
+
+window.exportData = exportData;
