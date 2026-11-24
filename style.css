@@ -1504,3 +1504,32 @@ textarea:focus-visible {
     font-size: 17px;
     letter-spacing: 1px;
 }
+/* EV EMPIRE VENTURES TOPBAR BRANDING */
+
+.company-label {
+    display: block;
+    color: #c6a45b;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    margin-bottom: 5px;
+}
+
+.topbar-title h3 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #123d2c;
+}
+
+.topbar-title p {
+    font-size: 12px;
+    color: #718078;
+    margin-top: 4px;
+}
+
+.user-avatar {
+    background: #123d2c;
+    color: #c6a45b;
+    border: 1px solid #c6a45b;
+    font-weight: 800;
+}
