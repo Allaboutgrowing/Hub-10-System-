@@ -3880,3 +3880,189 @@ padding: 14px;
         padding: 18px;
     }
 }
+/* =====================================
+   HUB 01 - SYSTEM SETTINGS
+===================================== */
+
+#settings {
+    animation: moduleFade 0.35s ease;
+}
+
+#settings .section-heading {
+    margin-bottom: 25px;
+}
+
+#settings .section-heading .eyebrow {
+    color: #c6a45b;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+#settings .section-heading h1 {
+    color: #123d2c;
+    font-size: 28px;
+    margin: 8px 0;
+}
+
+#settings .section-heading p {
+    color: #718078;
+    font-size: 14px;
+}
+
+/* SETTINGS PANELS */
+
+#settings .panel {
+    background: #ffffff;
+    border: 1px solid #e5ebe6;
+    border-radius: 13px;
+    padding: 24px;
+    margin-bottom: 22px;
+    box-shadow: 0 5px 18px rgba(9, 41, 30, 0.05);
+}
+
+#settings .panel-heading {
+    border-bottom: 1px solid #edf0ed;
+    padding-bottom: 14px;
+    margin-bottom: 18px;
+}
+
+#settings .panel-heading h3 {
+    color: #123d2c;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+/* SYSTEM INFORMATION */
+
+#settings .overview-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+#settings .overview-list > div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    padding: 15px 4px;
+    border-bottom: 1px solid #edf0ed;
+}
+
+#settings .overview-list > div:last-child {
+    border-bottom: none;
+}
+
+#settings .overview-list span {
+    color: #718078;
+    font-size: 13px;
+}
+
+#settings .overview-list strong {
+    color: #123d2c;
+    font-size: 13px;
+    font-weight: 700;
+    text-align: right;
+}
+
+/* DATA MANAGEMENT */
+
+#settings .warning-panel {
+    border-left: 4px solid #c6a45b;
+    background: linear-gradient(135deg, #ffffff, #fbfaf5);
+}
+
+#settings .warning-panel > p {
+    color: #64736b;
+    font-size: 13px;
+    line-height: 1.8;
+    margin-bottom: 20px;
+}
+
+#settings .form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 15px;
+}
+
+#settings .secondary-button {
+    background: #123d2c;
+    color: #ffffff;
+    border: 1px solid #123d2c;
+    border-radius: 7px;
+    padding: 12px 18px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.25s ease;
+}
+
+#settings .secondary-button:hover {
+    background: #c6a45b;
+    border-color: #c6a45b;
+    color: #09291e;
+    transform: translateY(-2px);
+}
+
+#settings .small-note {
+    color: #89938d;
+    font-size: 11px;
+    margin-top: 18px;
+    line-height: 1.6;
+}
+
+/* FOOTER */
+
+.footer {
+    border-top: 1px solid #e5ebe6;
+    padding: 22px 10px;
+    text-align: center;
+    margin-top: 30px;
+}
+
+.footer p {
+    color: #123d2c;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.footer span {
+    display: block;
+    color: #89938d;
+    font-size: 11px;
+    margin-top: 6px;
+}
+
+/* MOBILE RESPONSIVENESS */
+
+@media (max-width: 600px) {
+
+    #settings .panel {
+        padding: 17px;
+    }
+
+    #settings .section-heading h1 {
+        font-size: 23px;
+    }
+
+    #settings .overview-list > div {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    #settings .overview-list strong {
+        text-align: left;
+    }
+
+    #settings .form-actions {
+        flex-direction: column;
+    }
+
+    #settings .secondary-button {
+        width: 100%;
+    }
+}
