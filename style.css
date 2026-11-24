@@ -2154,3 +2154,153 @@ padding: 14px;
         width: 100%;
     }
 }
+/* =====================================
+   EV EMPIRE VENTURES
+   SUPPLIERS & PROCESSORS MODULE
+===================================== */
+
+#suppliers {
+    animation: moduleFade 0.35s ease;
+}
+
+#suppliers .section-heading {
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #e5ebe7;
+}
+
+#suppliers .section-heading .eyebrow {
+    color: #b18d45;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+#suppliers .section-heading h1 {
+    color: #123d2c;
+    font-size: 27px;
+    margin: 8px 0;
+}
+
+#suppliers .section-heading p {
+    color: #718078;
+    font-size: 13px;
+}
+
+/* Registration panel */
+
+#suppliers .panel {
+    margin-bottom: 22px;
+}
+
+#suppliers .panel-heading {
+    border-bottom: 1px solid #edf1ee;
+}
+
+#suppliers .panel-heading h3 {
+    color: #123d2c;
+    font-size: 16px;
+}
+
+/* Registration form */
+
+#suppliers .data-form label {
+    color: #40564a;
+    font-size: 12px;
+    font-weight: 650;
+}
+
+#suppliers .data-form input,
+#suppliers .data-form select {
+    width: 100%;
+    min-height: 43px;
+    margin-top: 7px;
+    padding: 10px 12px;
+    border: 1px solid #dce5df;
+    border-radius: 7px;
+    background: #fbfcfb;
+    color: #123d2c;
+    font-size: 13px;
+    outline: none;
+    transition: border 0.2s ease;
+}
+
+#suppliers .data-form input:focus,
+#suppliers .data-form select:focus {
+    border-color: #c6a45b;
+    box-shadow: 0 0 0 3px rgba(198,164,91,0.12);
+}
+
+/* Form buttons */
+
+#suppliers .primary-button {
+    background: #123d2c;
+    color: #ffffff;
+    border: 1px solid #123d2c;
+    border-radius: 7px;
+    padding: 11px 20px;
+    font-weight: 700;
+}
+
+#suppliers .primary-button:hover {
+    background: #1c6045;
+}
+
+#suppliers .secondary-button {
+    background: #f1f4f1;
+    color: #123d2c;
+    border: 1px solid #dce5df;
+    border-radius: 7px;
+    padding: 11px 20px;
+}
+
+/* Supplier directory */
+
+#suppliers .table-search {
+    border: 1px solid #dce5df;
+    border-radius: 7px;
+    padding: 10px 12px;
+    outline: none;
+}
+
+#suppliers .table-search:focus {
+    border-color: #c6a45b;
+}
+
+#suppliers table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#suppliers table th {
+    background: #123d2c;
+    color: #ffffff;
+    padding: 14px;
+    font-size: 11px;
+    text-align: left;
+}
+
+#suppliers table td {
+    padding: 13px;
+    font-size: 12px;
+    color: #58685e;
+    border-bottom: 1px solid #edf1ee;
+}
+
+#suppliers table tbody tr:hover {
+    background: #f5f8f5;
+}
+
+/* Mobile responsiveness */
+
+@media (max-width: 600px) {
+    #suppliers .panel-heading {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    #suppliers .table-search {
+        width: 100%;
+    }
+}
