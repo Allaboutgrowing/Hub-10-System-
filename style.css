@@ -1713,3 +1713,122 @@ textarea:focus-visible {
         font-size: 24px;
     }
 }
+/* EV EMPIRE VENTURES - EXECUTIVE DASHBOARD PANELS */
+
+.content-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+    margin-top: 24px;
+    margin-bottom: 24px;
+}
+
+.panel {
+    background: #ffffff;
+    border: 1px solid #e5ebe7;
+    border-radius: 14px;
+    padding: 24px;
+    box-shadow: 0 4px 15px rgba(9, 41, 30, 0.04);
+}
+
+.panel-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 17px;
+    margin-bottom: 18px;
+    border-bottom: 1px solid #edf1ee;
+}
+
+.panel-heading h3 {
+    color: #123d2c;
+    font-size: 17px;
+    font-weight: 750;
+    margin-top: 5px;
+}
+
+.panel-heading .eyebrow {
+    color: #b18d45;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.8px;
+}
+
+/* Operational overview */
+
+.overview-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.overview-list > div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 4px;
+    border-bottom: 1px solid #edf1ee;
+}
+
+.overview-list > div:last-child {
+    border-bottom: none;
+}
+
+.overview-list span {
+    color: #64746a;
+    font-size: 13px;
+}
+
+.overview-list strong {
+    color: #123d2c;
+    font-size: 19px;
+    font-weight: 800;
+}
+
+/* Financial performance */
+
+.snapshot {
+    padding: 15px;
+    margin-bottom: 12px;
+    background: #f7f9f7;
+    border: 1px solid #edf1ee;
+    border-radius: 9px;
+}
+
+.snapshot:last-child {
+    margin-bottom: 0;
+    border-left: 3px solid #c6a45b;
+}
+
+.snapshot span {
+    display: block;
+    color: #718078;
+    font-size: 11px;
+    font-weight: 600;
+    margin-bottom: 7px;
+}
+
+.snapshot h2 {
+    color: #123d2c;
+    font-size: 23px;
+    font-weight: 800;
+    margin-bottom: 5px;
+}
+
+.snapshot p {
+    color: #89968e;
+    font-size: 11px;
+}
+
+/* Mobile layout */
+
+@media (max-width: 700px) {
+    .content-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .panel {
+        padding: 18px;
+    }
+}
