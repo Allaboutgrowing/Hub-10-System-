@@ -1491,3 +1491,16 @@ textarea:focus-visible {
     }
 
 }
+.brand small {
+    display: block;
+    margin-top: 6px;
+    color: #c6a45b;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+.brand h2 {
+    font-size: 17px;
+    letter-spacing: 1px;
+}
