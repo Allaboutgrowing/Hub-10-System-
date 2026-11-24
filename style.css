@@ -2304,3 +2304,135 @@ padding: 14px;
         width: 100%;
     }
 }
+/* =====================================
+   EV EMPIRE VENTURES
+   PROCUREMENT MANAGEMENT MODULE
+===================================== */
+
+#procurement {
+    animation: moduleFade 0.35s ease;
+}
+
+#procurement .section-heading {
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #e5ebe7;
+}
+
+#procurement .section-heading .eyebrow {
+    color: #b18d45;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+#procurement .section-heading h1 {
+    color: #123d2c;
+    font-size: 27px;
+    margin: 8px 0;
+}
+
+#procurement .section-heading p {
+    color: #718078;
+    font-size: 13px;
+}
+
+/* Procurement panels */
+
+#procurement .panel {
+    margin-bottom: 22px;
+}
+
+#procurement .panel-heading h3 {
+    color: #123d2c;
+    font-size: 16px;
+}
+
+/* Procurement form */
+
+#procurement .data-form label {
+    color: #40564a;
+    font-size: 12px;
+    font-weight: 650;
+}
+
+#procurement .data-form input,
+#procurement .data-form select {
+    width: 100%;
+    min-height: 43px;
+    margin-top: 7px;
+    padding: 10px 12px;
+    border: 1px solid #dce5df;
+    border-radius: 7px;
+    background: #fbfcfb;
+    color: #123d2c;
+    font-size: 13px;
+    outline: none;
+    transition: border 0.2s ease;
+}
+
+#procurement .data-form input:focus,
+#procurement .data-form select:focus {
+    border-color: #c6a45b;
+    box-shadow: 0 0 0 3px rgba(198,164,91,0.12);
+}
+
+/* Procurement action button */
+
+#procurement .primary-button {
+    background: #123d2c;
+    color: #ffffff;
+    border: 1px solid #123d2c;
+    border-radius: 7px;
+    padding: 11px 20px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+#procurement .primary-button:hover {
+    background: #1c6045;
+}
+
+/* Procurement history table */
+
+#procurement .table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+#procurement table {
+    width: 100%;
+    min-width: 650px;
+    border-collapse: collapse;
+}
+
+#procurement table th {
+    background: #123d2c;
+    color: #ffffff;
+    padding: 14px;
+    font-size: 11px;
+    text-align: left;
+}
+
+#procurement table td {
+    padding: 13px;
+    font-size: 12px;
+    color: #58685e;
+    border-bottom: 1px solid #edf1ee;
+}
+
+#procurement table tbody tr:hover {
+    background: #f5f8f5;
+}
+
+/* Mobile responsiveness */
+
+@media (max-width: 600px) {
+    #procurement .panel {
+        padding: 18px;
+    }
+
+    #procurement .primary-button {
+        width: 100%;
+    }
+}
