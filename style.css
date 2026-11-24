@@ -2614,3 +2614,225 @@ padding: 14px;
         width: 100%;
     }
 }
+/* =================================
+   HUB 01 — INVENTORY & WAREHOUSE
+================================= */
+
+#inventory {
+    animation: moduleFade 0.35s ease;
+}
+
+#inventory .section-heading {
+    margin-bottom: 25px;
+}
+
+#inventory .section-heading .eyebrow {
+    color: #b18d45;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+#inventory .section-heading h1 {
+    color: #123d2c;
+    font-size: 27px;
+    font-weight: 800;
+    margin: 10px 0;
+}
+
+#inventory .section-heading p {
+    color: #718078;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+/* Inventory statistics */
+
+#inventory .stats-grid.three-columns {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+    margin: 22px 0;
+}
+
+#inventory .stat-card {
+    background: #fff;
+    border: 1px solid #e5ebe7;
+    border-left: 4px solid #c6a45b;
+    border-radius: 12px;
+    padding: 22px;
+    box-shadow: 0 4px 15px rgba(9, 41, 30, 0.04);
+    transition: transform 0.2s ease;
+}
+
+#inventory .stat-card:hover {
+    transform: translateY(-3px);
+}
+
+#inventory .stat-card span {
+    display: block;
+    color: #68776e;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+#inventory .stat-card h2 {
+    color: #123d2c;
+    font-size: 27px;
+    font-weight: 800;
+}
+
+/* Inventory panels */
+
+#inventory .panel {
+    background: #fff;
+    border: 1px solid #e5ebe7;
+    border-radius: 14px;
+    padding: 25px;
+    margin-bottom: 22px;
+    box-shadow: 0 4px 15px rgba(9, 41, 30, 0.04);
+}
+
+#inventory .panel-heading {
+    padding-bottom: 16px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #edf1ee;
+}
+
+#inventory .panel-heading h3 {
+    color: #123d2c;
+    font-size: 17px;
+    font-weight: 750;
+}
+
+/* Inventory form */
+
+#inventory .form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+
+#inventory .data-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    color: #405248;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+#inventory input,
+#inventory select {
+    width: 100%;
+    min-height: 44px;
+    padding: 11px 13px;
+    border: 1px solid #dce5de;
+    border-radius: 7px;
+    background: #fbfcfb;
+    color: #123d2c;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#inventory input:focus,
+#inventory select:focus {
+    border-color: #c6a45b;
+    box-shadow: 0 0 0 3px rgba(198, 164, 91, 0.13);
+    background: #fff;
+}
+
+/* Add inventory button */
+
+#inventory .form-actions {
+    margin-top: 25px;
+}
+
+#inventory .primary-button {
+    background: #123d2c;
+    color: #fff;
+    border: 1px solid #123d2c;
+    border-radius: 7px;
+    padding: 13px 22px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#inventory .primary-button:hover {
+    background: #1c6045;
+    border-color: #c6a45b;
+    transform: translateY(-2px);
+}
+
+/* Warehouse records table */
+
+#inventory .table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+#inventory table {
+    width: 100%;
+    min-width: 750px;
+    border-collapse: collapse;
+}
+
+#inventory table thead {
+    background: #123d2c;
+}
+
+#inventory table th {
+    color: #e2c77f;
+    padding: 15px 12px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 800;
+    white-space: nowrap;
+    border-bottom: 2px solid #c6a45b;
+}
+
+#inventory table td {
+    padding: 14px 12px;
+    color: #58685e;
+    font-size: 12px;
+    border-bottom: 1px solid #edf1ee;
+    white-space: nowrap;
+}
+
+#inventory table tbody tr:hover {
+    background: #f7f9f7;
+}
+
+#inventory table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Mobile responsiveness */
+
+@media (max-width: 650px) {
+    #inventory .stats-grid.three-columns {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    #inventory .form-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    #inventory .panel {
+        padding: 17px;
+    }
+
+    #inventory .section-heading h1 {
+        font-size: 23px;
+    }
+
+    #inventory .primary-button {
+        width: 100%;
+    }
+}
