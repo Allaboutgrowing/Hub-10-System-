@@ -1917,3 +1917,77 @@ flex-direction: column;
 align-items: flex-start;
 }
 }
+/* EV EMPIRE VENTURES - SIDEBAR NAVIGATION */
+
+.sidebar {
+background: linear-gradient(180deg, #09291e 0%, #123d2c 100%);
+border-right: 1px solid rgba(198, 164, 91, 0.25);
+}
+
+.brand {
+padding-bottom: 25px;
+border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+margin-bottom: 22px;
+}
+
+.brand-icon {
+background: #c6a45b;
+color: #09291e;
+border: none;
+border-radius: 10px;
+font-weight: 900;
+box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.sidebar-label {
+color: #c6a45b;
+font-size: 10px;
+font-weight: 800;
+letter-spacing: 2px;
+margin: 20px 12px 12px;
+}
+
+.navigation {
+gap: 5px;
+}
+
+.nav-link {
+color: #d5e1d9;
+border-radius: 8px;
+margin: 3px 0;
+padding: 12px 14px;
+font-size: 12px;
+transition: all 0.2s ease;
+}
+
+.nav-link:hover {
+background: rgba(255, 255, 255, 0.08);
+color: #ffffff;
+transform: translateX(3px);
+}
+
+.nav-link.active {
+background: rgba(198, 164, 91, 0.16);
+color: #e2c77f;
+border-left: 3px solid #c6a45b;
+font-weight: 700;
+}
+
+.nav-link span {
+color: #c6a45b;
+margin-right: 10px;
+font-size: 15px;
+}
+
+.sidebar-footer {
+border-top: 1px solid rgba(255, 255, 255, 0.12);
+color: #d5e1d9;
+font-size: 10px;
+padding-top: 18px;
+}
+
+@media (max-width: 768px) {
+.nav-link {
+padding: 14px;
+}
+}
