@@ -1991,3 +1991,166 @@ padding-top: 18px;
 padding: 14px;
 }
 }
+/* =====================================
+   EV EMPIRE VENTURES
+   MARKET INTELLIGENCE MODULE
+===================================== */
+
+#market-intelligence {
+    animation: moduleFade 0.35s ease;
+}
+
+#market-intelligence .section-heading {
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #e5ebe7;
+}
+
+#market-intelligence .section-heading .eyebrow {
+    color: #b18d45;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+#market-intelligence .section-heading h1 {
+    color: #123d2c;
+    font-size: 27px;
+    margin: 8px 0;
+}
+
+#market-intelligence .section-heading p {
+    color: #718078;
+    font-size: 13px;
+}
+
+/* Market statistics */
+
+#market-intelligence .stats-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-bottom: 24px;
+}
+
+#market-intelligence .stat-card {
+    border-top: 3px solid #c6a45b;
+    border-left: 1px solid #e5ebe7;
+}
+
+/* Forms and panels */
+
+#market-intelligence .panel {
+    margin-bottom: 22px;
+}
+
+#market-intelligence .panel-heading h3 {
+    color: #123d2c;
+    font-size: 16px;
+}
+
+#market-intelligence .data-form label {
+    color: #40564a;
+    font-size: 12px;
+    font-weight: 650;
+}
+
+#market-intelligence .data-form input,
+#market-intelligence .data-form select {
+    width: 100%;
+    min-height: 43px;
+    margin-top: 7px;
+    padding: 10px 12px;
+    border: 1px solid #dce5df;
+    border-radius: 7px;
+    background: #fbfcfb;
+    color: #123d2c;
+    font-size: 13px;
+    outline: none;
+    transition: border 0.2s ease;
+}
+
+#market-intelligence .data-form input:focus,
+#market-intelligence .data-form select:focus {
+    border-color: #c6a45b;
+    box-shadow: 0 0 0 3px rgba(198,164,91,0.12);
+}
+
+/* Buttons */
+
+#market-intelligence .primary-button {
+    background: #123d2c;
+    color: #ffffff;
+    border: 1px solid #123d2c;
+    border-radius: 7px;
+    padding: 11px 20px;
+    font-weight: 700;
+}
+
+#market-intelligence .primary-button:hover {
+    background: #1c6045;
+}
+
+#market-intelligence .secondary-button {
+    background: #f1f4f1;
+    color: #123d2c;
+    border: 1px solid #dce5df;
+    border-radius: 7px;
+    padding: 11px 20px;
+}
+
+/* Buyer records */
+
+#market-intelligence .table-search {
+    border: 1px solid #dce5df;
+    border-radius: 7px;
+    padding: 10px 12px;
+    outline: none;
+}
+
+#market-intelligence .table-search:focus {
+    border-color: #c6a45b;
+}
+
+#market-intelligence table th {
+    background: #123d2c;
+    color: #ffffff;
+    padding: 14px;
+    font-size: 11px;
+}
+
+#market-intelligence table td {
+    padding: 13px;
+    font-size: 12px;
+    border-bottom: 1px solid #edf1ee;
+}
+
+#market-intelligence table tbody tr:hover {
+    background: #f5f8f5;
+}
+
+@keyframes moduleFade {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 600px) {
+    #market-intelligence .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    #market-intelligence .panel-heading {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    #market-intelligence .table-search {
+        width: 100%;
+    }
+}
