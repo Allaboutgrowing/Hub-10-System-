@@ -2836,3 +2836,183 @@ padding: 14px;
         width: 100%;
     }
 }
+/* =================================
+   HUB 01 — PRODUCTION MANAGEMENT
+================================= */
+
+#production {
+    animation: moduleFade 0.35s ease;
+}
+
+#production .section-heading {
+    margin-bottom: 25px;
+}
+
+#production .section-heading .eyebrow {
+    color: #b18d45;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+#production .section-heading h1 {
+    color: #123d2c;
+    font-size: 27px;
+    font-weight: 800;
+    margin: 10px 0;
+}
+
+#production .section-heading p {
+    color: #718078;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+/* Production panels */
+
+#production .panel {
+    background: #fff;
+    border: 1px solid #e5ebe7;
+    border-radius: 14px;
+    padding: 25px;
+    margin-bottom: 22px;
+    box-shadow: 0 4px 15px rgba(9, 41, 30, 0.04);
+}
+
+#production .panel-heading {
+    padding-bottom: 16px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #edf1ee;
+}
+
+#production .panel-heading h3 {
+    color: #123d2c;
+    font-size: 17px;
+    font-weight: 750;
+}
+
+/* Production form */
+
+#production .form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+
+#production .data-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    color: #405248;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+#production input,
+#production select {
+    width: 100%;
+    min-height: 44px;
+    padding: 11px 13px;
+    border: 1px solid #dce5de;
+    border-radius: 7px;
+    background: #fbfcfb;
+    color: #123d2c;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#production input:focus,
+#production select:focus {
+    border-color: #c6a45b;
+    box-shadow: 0 0 0 3px rgba(198, 164, 91, 0.13);
+    background: #fff;
+}
+
+/* Save button */
+
+#production .form-actions {
+    margin-top: 25px;
+}
+
+#production .primary-button {
+    background: #123d2c;
+    color: #fff;
+    border: 1px solid #123d2c;
+    border-radius: 7px;
+    padding: 13px 22px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#production .primary-button:hover {
+    background: #1c6045;
+    border-color: #c6a45b;
+    transform: translateY(-2px);
+}
+
+/* Production history */
+
+#production .table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+#production table {
+    width: 100%;
+    min-width: 850px;
+    border-collapse: collapse;
+}
+
+#production table thead {
+    background: #123d2c;
+}
+
+#production table th {
+    color: #e2c77f;
+    padding: 15px 12px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 800;
+    white-space: nowrap;
+    border-bottom: 2px solid #c6a45b;
+}
+
+#production table td {
+    padding: 14px 12px;
+    color: #58685e;
+    font-size: 12px;
+    border-bottom: 1px solid #edf1ee;
+    white-space: nowrap;
+}
+
+#production table tbody tr:hover {
+    background: #f7f9f7;
+}
+
+#production table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Mobile responsiveness */
+
+@media (max-width: 650px) {
+    #production .form-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    #production .panel {
+        padding: 17px;
+    }
+
+    #production .section-heading h1 {
+        font-size: 23px;
+    }
+
+    #production .primary-button {
+        width: 100%;
+    }
+}
